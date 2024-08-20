@@ -1,0 +1,6 @@
+package: handler
+generate:
+  std-http-server: true
+  embedded-spec: true
+  models: true
+output: handler.gen.go

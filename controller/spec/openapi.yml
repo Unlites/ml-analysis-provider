@@ -1,0 +1,165 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: ML Analysis Provider API
+  description: API that provides possibility to add and get analyzes of working with ML models
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  "/analyzes/{id}":
+    get:
+      summary: Get analysis by id
+      operationId: GetAnalysisById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "404":
+          description: Not found
+        default:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        
+  "/analyzes":
+    post:
+      summary: Add analysis
+      operationId: AddAnalysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisRequest"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "invalid query"
+        default:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      summary: Get analyzes
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: answer
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: isUserSatisfied
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Success 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analyzes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AnalysisResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "invalid query"
+        default:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    AnalysisRequest:
+      type: object
+      required:
+        - query
+        - answer
+        - isUserSatisfied
+      properties:
+        query:
+          type: string
+          example: "How to get started with Kubernetes"
+        answer:
+          type: string
+          example: "Read this article https://kubernetes.io/docs/getting-started/"
+        isUserSatisfied:
+          type: boolean
+          example: true
+    AnalysisResponse:
+      type: object
+      required:
+        - id
+        - query
+        - answer
+        - isUserSatisfied
+      properties:
+        id:
+          type: string
+          example: 461e27a9-1f12-408b-834a-a698e749e9c2
+        query:
+          type: string
+          example: "How to get started with Kubernetes"
+        answer:
+          type: string
+          example: "Read this article https://kubernetes.io/docs/getting-started/"
+        isUserSatisfied:
+          type: boolean
+          example: true
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "internal server error"
