@@ -6,7 +6,7 @@ import (
 	"os"
 
 	natsbroker "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/broker/nats"
-	httphandler "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/handlers/http"
+	httphandler "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/handler/http"
 	"github.com/Unlites/ml-analysis-provider/controller/internal/application"
 	"github.com/nats-io/nats.go"
 )
