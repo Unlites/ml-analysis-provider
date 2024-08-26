@@ -1,4 +1,4 @@
-package broker
+package nats
 
 import (
 	"context"
@@ -6,18 +6,18 @@ import (
 	"fmt"
 
 	"github.com/Unlites/ml-analysis-provider/controller/internal/domain"
-	"github.com/nats-io/nats.go"
+	natsclient "github.com/nats-io/nats.go"
 )
 
 const analysisSubject = "analysis"
 
 // NatsBroker is the broker adapter for NATS
 type NatsBroker struct {
-	conn *nats.Conn
+	conn *natsclient.Conn
 }
 
 // NewNatsBroker takes a NATS connection and creates a new broker object
-func NewNatsBroker(conn *nats.Conn) *NatsBroker {
+func NewNatsBroker(conn *natsclient.Conn) *NatsBroker {
 	return &NatsBroker{
 		conn: conn,
 	}

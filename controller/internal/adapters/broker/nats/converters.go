@@ -1,4 +1,4 @@
-package broker
+package nats
 
 import "github.com/Unlites/ml-analysis-provider/controller/internal/domain"
 
