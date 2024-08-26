@@ -75,9 +75,9 @@ func (n *NatsBroker) RequestAnalyzes(ctx context.Context, filter domain.Analyzes
 		return nil, fmt.Errorf("failed to do request: %w", err)
 	}
 
-	var analysis []domain.Analysis
+	var analysis []AnalysisNats
 	if err := json.Unmarshal(analysisMsg.Data, &analysis); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal analysis from json: %w", err)
 	}
-	return analysis, nil
+	return toAnalyzesDomain(analysis), nil
 }
