@@ -3,7 +3,7 @@ package handler
 import "github.com/Unlites/ml-analysis-provider/controller/internal/domain"
 
 // toDomainAnalyzesFilter returnes AnalyzesFilter from GetAnalyzesParams
-func (h *HTTPHandler) toDomainAnalyzesFilter(params GetAnalyzesParams) domain.AnalyzesFilter {
+func toDomainAnalyzesFilter(params GetAnalyzesParams) domain.AnalyzesFilter {
 	var filter domain.AnalyzesFilter
 
 	if params.Limit == nil {
@@ -28,7 +28,7 @@ func (h *HTTPHandler) toDomainAnalyzesFilter(params GetAnalyzesParams) domain.An
 }
 
 // toDomainAnalysis returnes Analysis from AnalysisRequest
-func (h *HTTPHandler) toDomainAnalysis(req AnalysisRequest) domain.Analysis {
+func toDomainAnalysis(req AnalysisRequest) domain.Analysis {
 	return domain.Analysis{
 		Query:           req.Query,
 		Answer:          req.Answer,
@@ -37,7 +37,7 @@ func (h *HTTPHandler) toDomainAnalysis(req AnalysisRequest) domain.Analysis {
 }
 
 // toAnalysisResponse returnes AnalysisResponse from Analysis
-func (h *HTTPHandler) toAnalysisResponse(analysis domain.Analysis) AnalysisResponse {
+func toAnalysisResponse(analysis domain.Analysis) AnalysisResponse {
 	return AnalysisResponse{
 		Id:              analysis.Id,
 		Query:           analysis.Query,
@@ -47,10 +47,10 @@ func (h *HTTPHandler) toAnalysisResponse(analysis domain.Analysis) AnalysisRespo
 }
 
 // toAnalysisResponses returnes slice of AnalysisResponse from given slice of Analysis
-func (h *HTTPHandler) toAnalysisResponses(analysis []domain.Analysis) []AnalysisResponse {
+func toAnalysisResponses(analysis []domain.Analysis) []AnalysisResponse {
 	responses := make([]AnalysisResponse, len(analysis))
 	for i, a := range analysis {
-		responses[i] = h.toAnalysisResponse(a)
+		responses[i] = toAnalysisResponse(a)
 	}
 	return responses
 }

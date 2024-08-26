@@ -6,7 +6,7 @@ import (
 )
 
 // encodeResponse writes given http status and data to response of request
-func (h *HTTPHandler) encodeResponse(w http.ResponseWriter, status int, data any) {
+func encodeResponse(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 	if data != nil {
 		json.NewEncoder(w).Encode(data)

@@ -33,16 +33,16 @@ func NewHTTPHandler(uc application.Usecase) (http.Handler, error) {
 
 // GetAnalyzes implements ServerInterface
 func (h *HTTPHandler) GetAnalyzes(w http.ResponseWriter, r *http.Request, params GetAnalyzesParams) {
-	analyzes, err := h.uc.GetAnalyzes(r.Context(), h.toDomainAnalyzesFilter(params))
+	analyzes, err := h.uc.GetAnalyzes(r.Context(), toDomainAnalyzesFilter(params))
 	if err != nil {
-		h.encodeResponse(
+		encodeResponse(
 			w, http.StatusInternalServerError,
 			ErrorResponse{"failed to get analyzes: " + err.Error()},
 		)
 		return
 	}
 
-	h.encodeResponse(w, http.StatusOK, h.toAnalysisResponses(analyzes))
+	encodeResponse(w, http.StatusOK, toAnalysisResponses(analyzes))
 }
 
 // AddAnalysis implements ServerInterface
@@ -50,22 +50,22 @@ func (h *HTTPHandler) AddAnalysis(w http.ResponseWriter, r *http.Request) {
 	var req AnalysisRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.encodeResponse(
+		encodeResponse(
 			w, http.StatusBadRequest,
 			ErrorResponse{"invalid request: " + err.Error()},
 		)
 		return
 	}
 
-	if err := h.uc.AddAnalysis(r.Context(), h.toDomainAnalysis(req)); err != nil {
-		h.encodeResponse(
+	if err := h.uc.AddAnalysis(r.Context(), toDomainAnalysis(req)); err != nil {
+		encodeResponse(
 			w, http.StatusInternalServerError,
 			ErrorResponse{"failed to add analysis: " + err.Error()},
 		)
 		return
 	}
 
-	h.encodeResponse(w, http.StatusCreated, nil)
+	encodeResponse(w, http.StatusCreated, nil)
 }
 
 // GetAnalyzesId implements ServerInterface
@@ -78,12 +78,12 @@ func (h *HTTPHandler) GetAnalysisById(w http.ResponseWriter, r *http.Request, id
 			status = http.StatusNotFound
 		}
 
-		h.encodeResponse(
+		encodeResponse(
 			w, status,
 			ErrorResponse{"failed to get analysis: " + err.Error()},
 		)
 		return
 	}
 
-	h.encodeResponse(w, http.StatusOK, h.toAnalysisResponse(analysis))
+	encodeResponse(w, http.StatusOK, toAnalysisResponse(analysis))
 }

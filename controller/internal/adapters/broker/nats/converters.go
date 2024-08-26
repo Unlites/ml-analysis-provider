@@ -32,7 +32,7 @@ func toAnalyzesFilterNats(ad domain.AnalyzesFilter) AnalyzesFilterNats {
 }
 
 // toAnalyzesDomain returnes slice of Analysis from given slice of AnalysisNats
-func toAnalyzesDomain(analyzes []AnalysisNats) []domain.Analysis {
+func toDomainAnalyzes(analyzes []AnalysisNats) []domain.Analysis {
 	responses := make([]domain.Analysis, len(analyzes))
 	for i, a := range analyzes {
 		responses[i] = toDomainAnalysis(a)
