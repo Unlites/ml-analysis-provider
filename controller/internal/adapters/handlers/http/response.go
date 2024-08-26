@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// encodeResponse writes given http status and data to response of request
 func (h *HTTPHandler) encodeResponse(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 	if data != nil {

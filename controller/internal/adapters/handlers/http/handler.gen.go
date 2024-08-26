@@ -22,7 +22,7 @@ import (
 // AnalysisRequest defines model for AnalysisRequest.
 type AnalysisRequest struct {
 	Answer          string `json:"answer"`
-	IsUserSatisfied bool   `json:"isUserSatisfied"`
+	IsUserSatisfied bool   `json:"is_user_satisfied"`
 	Query           string `json:"query"`
 }
 
@@ -30,7 +30,7 @@ type AnalysisRequest struct {
 type AnalysisResponse struct {
 	Answer          string `json:"answer"`
 	Id              string `json:"id"`
-	IsUserSatisfied bool   `json:"isUserSatisfied"`
+	IsUserSatisfied bool   `json:"is_user_satisfied"`
 	Query           string `json:"query"`
 }
 
@@ -43,7 +43,7 @@ type ErrorResponse struct {
 type GetAnalyzesParams struct {
 	Query           *string `form:"query,omitempty" json:"query,omitempty"`
 	Answer          *string `form:"answer,omitempty" json:"answer,omitempty"`
-	IsUserSatisfied *bool   `form:"isUserSatisfied,omitempty" json:"isUserSatisfied,omitempty"`
+	IsUserSatisfied *bool   `form:"is_user_satisfied,omitempty" json:"is_user_satisfied,omitempty"`
 	Limit           *int    `form:"limit,omitempty" json:"limit,omitempty"`
 	Offset          *int    `form:"offset,omitempty" json:"offset,omitempty"`
 }
@@ -98,11 +98,11 @@ func (siw *ServerInterfaceWrapper) GetAnalyzes(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// ------------- Optional query parameter "isUserSatisfied" -------------
+	// ------------- Optional query parameter "is_user_satisfied" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "isUserSatisfied", r.URL.Query(), &params.IsUserSatisfied)
+	err = runtime.BindQueryParameter("form", true, false, "is_user_satisfied", r.URL.Query(), &params.IsUserSatisfied)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "isUserSatisfied", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "is_user_satisfied", Err: err})
 		return
 	}
 
@@ -298,20 +298,20 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xW32/bNhD+Vwhuj3Zkp0br6M0Zhs1YOwQt9lTkgRZP9rUSyfBOzjxD//twkq3EkVIj",
-	"7YD1oU+ixPvF7777qL3OfBm8A8ek072mbAOlaZYLZ4odIb2HuwqI5VOIPkBkhMbAOLqHKCv425ShAJ3q",
-	"92Cs4g2SMpExK0BtmAOlSfK5WkF0wEAX6BPrM0rWwIxuPSY2kcEmeqR5FyQMcUS31vVII/1FED8YRsoR",
-	"7Ek2jhV0LivvCzBOfO4qiLvTun7394q9WgOrQzZ1j7xRf3RV9ZPXIx3hrsIoaT8eoo6Ox+6XdttF8KtP",
-	"kLGU8gAiBe8I/i8UT4HTs9dTuHxjrsbTfHo5nk3mq/H81cyMzeurObyZXcFVdvl9dwOtHn1dS36N0cfn",
-	"+wGyfVouOoboTKEI4haiak3OVdha9SsQO3S5lxwWKIsYGL3TqV7cLBVvDKsQ/RYtkAqeCFdYIO8EMGOt",
-	"Ms42wBlh1j9Ayufq3sfP6NYtiO/eqtJbKBoMkZsTvHurjkxUN23wqBY3Sz3SW4jUpp9eTC4mgpAP4ExA",
-	"nepXzaeRDoY3DTrJMa28rKFRBUHPyBGWVqf6N+DF0UYcoymBIZJOP+41Sp5j15wp4dFrKz0SsIfrsGPX",
-	"9Rd7PqXJQIiOwM/FKLBEHvIUtqwhPu/p85zgjOutcKmlaAP15WQij8w7BtegbkIoMGtwTz6RNHD/KOBT",
-	"jXloGjKUzeLnCLlO9U/Jww2QHOQ/6clW3dHYxGh2DdkHeH3K5w9VlgGROM++qf7BmdyaAq06YtufxbPl",
-	"XRur4uFyazZzUxX8ojK/hOGpzgzkXw7KithRVZZGRFOmqZt0KTJ4Gpi5hbXHjulWhID42tvdf3aYpz8D",
-	"9anaifbXPcpO+xL3SwTDYH9Q4uspsWgugUO3ZavT5GSPtj4rzIR0vVvaZ8RZlP6RUFr9tM1fkttvVa2X",
-	"SdIZwZn12fenZ5X7ytnvf97lpl7tFNo2UuvS9qmKhU61/BGmSVL4zBQbT5zOJ/NJYgIm26mub+t/AwAA",
-	"//+l0cXt2gsAAA==",
+	"H4sIAAAAAAAC/+xW32/bNhD+Vwhuj3Zkp0br6M0Zhs1YOwTdYxEUtHiyr5VIhndy5hn634eTbCWOlBpp",
+	"B6wPfRIl3i9+991H7XXmy+AdOCad7jVlGyhNs1w4U+wI6T3cVUAsn0L0ASIjNAbG0T1EWcHfpgwF6FS/",
+	"B2MVb5CUiYxZAWrDHChNks/VCqIDBrpAn1ifUbIGZnTrMbGJDDbRI827IGGII7q1rkca6WNFED+SYaQc",
+	"wZ7k41hB57TyvgDjxOuugrg7rex3f6/YqzWwOuRT98gb9UdXVz99PdIR7iqMkvbDIeroePCh4m67GH71",
+	"CTKWYh6ApOAdwf+F5Cl0evZ6CpdvzNV4mk8vx7PJfDWev5qZsXl9NYc3syu4yi6/946g1aOvbcuvMfr4",
+	"fE9Atk8LRscQnSkUQdxCVK3JuRpbq34FYocu95LDAmURA6N3OtWLm6XijWEVot+iBVLBE+EKC+SdQGas",
+	"VcbZBjoj7PoHSPlc3fv4Gd26hfHdW1V6C0WDInJzgndv1ZGN6qYNHtXiZqlHeguR2vTTi8nFRBDyAZwJ",
+	"qFP9qvk00sHwpkEnOaaVlzU06iDoGTnC0upU/wa8ONqIYzQlMETS6Ye9Rslz7JszJTx6bSVIAvZwHXbs",
+	"+v5izz5RBoJ0JH4uSoEl8pCn8GUN8XlPn+cEZ1xvhU0tSRuwLycTeWTeMbgGdxNCgVmDfPKJpIX7RwGf",
+	"Ks1D25ChbBY/R8h1qn9KHu6C5HARJD3xqjsimxjNrqH7ALNPGf1XlWVAJM6zb6p/cCq3pkCrjtj2p/Fs",
+	"edfGqni45prN3FQFv6jML2F4qjQD+ZeDwiJ2VJWlEeGUeepmXYoMngambmHtsWO6lSEgvvZ2958d5ulv",
+	"QX2qd6L/dY+y077I/RLBMNgflPh6Siyaa+DQbdnqVDnZo63PSjMhXe+W9hl5Fq1/JJVWP23zlwT3W1Xr",
+	"ZZJ0RnBmffb96VnlvnL2+593uatXO4W2jdS6tH2qYqFTLf+FaZIUPjPFxhOn88l8kpiAyXaq69v63wAA",
+	"AP//w+mVy+QLAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

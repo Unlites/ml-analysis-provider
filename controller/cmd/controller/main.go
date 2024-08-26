@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Unlites/ml-analysis-provider/controller/internal/adapters/broker"
+	natsbroker "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/broker/nats"
 	httphandler "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/handlers/http"
 	"github.com/Unlites/ml-analysis-provider/controller/internal/application"
 	"github.com/nats-io/nats.go"
@@ -18,8 +18,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	messageBroker := broker.NewNatsBroker(natsConn)
-	usecase := application.NewUsecase(messageBroker)
+	broker := natsbroker.NewNatsBroker(natsConn)
+	usecase := application.NewUsecase(broker)
 	handler, err := httphandler.NewHTTPHandler(usecase)
 	if err != nil {
 		slog.Error("failed to create http handler", "detail", err)

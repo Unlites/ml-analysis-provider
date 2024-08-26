@@ -15,7 +15,7 @@ type Usecase interface {
 	GetAnalysisById(ctx context.Context, id string) (domain.Analysis, error)
 
 	// GetAnalyzes gets analyzes by filter
-	GetAnalyzes(ctx context.Context, AnalyzesFilter domain.AnalyzesFilter) ([]domain.Analysis, error)
+	GetAnalyzes(ctx context.Context, filter domain.AnalyzesFilter) ([]domain.Analysis, error)
 }
 
 // AnalysisBroker is the broker that publishes and requests analyzes
@@ -27,7 +27,7 @@ type AnalysisBroker interface {
 	RequestAnalysisById(ctx context.Context, id string) (domain.Analysis, error)
 
 	// RequestAnalyzes requests analyzes by filter
-	RequestAnalyzes(ctx context.Context, AnalyzesFilter domain.AnalyzesFilter) ([]domain.Analysis, error)
+	RequestAnalyzes(ctx context.Context, filter domain.AnalyzesFilter) ([]domain.Analysis, error)
 }
 
 type usecase struct {
@@ -45,8 +45,8 @@ func (u *usecase) GetAnalysisById(ctx context.Context, id string) (domain.Analys
 }
 
 // GetAnalyzes implements Usecase
-func (u *usecase) GetAnalyzes(ctx context.Context, AnalyzesFilter domain.AnalyzesFilter) ([]domain.Analysis, error) {
-	return u.broker.RequestAnalyzes(ctx, AnalyzesFilter)
+func (u *usecase) GetAnalyzes(ctx context.Context, filter domain.AnalyzesFilter) ([]domain.Analysis, error) {
+	return u.broker.RequestAnalyzes(ctx, filter)
 }
 
 // NewUsecase creates a new usecase object representing the business logic of the application

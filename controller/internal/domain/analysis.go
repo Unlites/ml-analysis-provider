@@ -2,7 +2,7 @@ package domain
 
 // Analysis represents a result of working with a ML model
 type Analysis struct {
-	ID              string
+	Id              string
 	Query           string
 	Answer          string
 	IsUserSatisfied bool
@@ -12,7 +12,7 @@ type Analysis struct {
 type AnalyzesFilter struct {
 	Query           string
 	Answer          string
-	IsUserSatisfied bool
+	IsUserSatisfied *bool
 	Limit           int
 	Offset          int
 }

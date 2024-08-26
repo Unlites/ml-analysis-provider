@@ -74,7 +74,7 @@ paths:
           required: false
           schema:
             type: string
-        - name: isUserSatisfied
+        - name: is_user_satisfied
           in: query
           required: false
           schema:
@@ -124,7 +124,7 @@ components:
       required:
         - query
         - answer
-        - isUserSatisfied
+        - is_user_satisfied
       properties:
         query:
           type: string
@@ -132,7 +132,7 @@ components:
         answer:
           type: string
           example: "Read this article https://kubernetes.io/docs/getting-started/"
-        isUserSatisfied:
+        is_user_satisfied:
           type: boolean
           example: true
     AnalysisResponse:
@@ -141,7 +141,7 @@ components:
         - id
         - query
         - answer
-        - isUserSatisfied
+        - is_user_satisfied
       properties:
         id:
           type: string
@@ -152,7 +152,7 @@ components:
         answer:
           type: string
           example: "Read this article https://kubernetes.io/docs/getting-started/"
-        isUserSatisfied:
+        is_user_satisfied:
           type: boolean
           example: true
     ErrorResponse:
