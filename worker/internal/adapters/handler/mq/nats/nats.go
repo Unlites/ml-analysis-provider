@@ -3,6 +3,8 @@ package nats
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -27,30 +29,64 @@ type AnalyzesFilterNats struct {
 	IsUserSatisfied *bool  `json:"is_user_satisfied"`
 }
 
+// Response is a NATS response
+type Response struct {
+	Data  any   `json:"data"`
+	Error error `json:"error"`
+}
+
 // NatsMqHandler is a nats adapter as handler for application
 type NatsMqHandler struct {
 	handleTimeout time.Duration
 	conn          *natsclient.Conn
 	uc            application.Usecase
+	subs          map[string]*natsclient.Subscription
 }
 
 // NewNatsMqHandler creates new nats handler and subscribes to required subjects
-func NewMqHandlerNats(
+func NewNatsMqHandler(
 	conn *natsclient.Conn,
 	handleTimeout time.Duration,
 	uc application.Usecase,
-) (*NatsMqHandler, error) {
-	handler := &NatsMqHandler{
+) *NatsMqHandler {
+
+	return &NatsMqHandler{
 		handleTimeout: handleTimeout,
 		conn:          conn,
 		uc:            uc,
+		subs:          make(map[string]*natsclient.Subscription),
+	}
+}
+
+func (h *NatsMqHandler) Start() error {
+	subHandlers := map[string]func(*natsclient.Msg){
+		analysisSubject:             h.AddAnalysis,
+		analysisSubject + ".*":      h.GetAnalysisById,
+		analysisSubject + ".filter": h.GetAnalyzes,
 	}
 
-	conn.Subscribe(analysisSubject, handler.AddAnalysis)
-	conn.Subscribe(analysisSubject+".filter", handler.GetAnalyzes)
-	conn.Subscribe(analysisSubject+".*", handler.GetAnalysisById)
+	for subject, handler := range subHandlers {
+		sub, err := h.conn.QueueSubscribe(subject, analysisSubject, handler)
+		if err != nil {
+			return fmt.Errorf("failed to subscribe to %s subject: %w", subject, err)
+		}
 
-	return handler, nil
+		h.subs[subject] = sub
+	}
+
+	return nil
+}
+
+func (h *NatsMqHandler) Stop() error {
+	var err error
+
+	for subject, subscription := range h.subs {
+		if err := subscription.Unsubscribe(); err != nil {
+			errors.Join(err, fmt.Errorf("failed to unsubscribe from %s: %w", subject, err))
+		}
+	}
+
+	return err
 }
 
 // AddAnalysis parses NATS message and calls usecase to add analysis
@@ -66,7 +102,7 @@ func (h *NatsMqHandler) AddAnalysis(m *natsclient.Msg) {
 	defer cancel()
 
 	if err := h.uc.AddAnalysis(ctx, toDomainAnalysis(analysis)); err != nil {
-		slog.Error("failed to add anylysis", "detail", err)
+		slog.Error("failed to add analysis: %w", "detail", err)
 		return
 	}
 }
@@ -80,23 +116,11 @@ func (h *NatsMqHandler) GetAnalysisById(m *natsclient.Msg) {
 
 	analysis, err := h.uc.GetAnalysisById(ctx, id)
 	if err != nil {
-		slog.Error("failed to get analysis", "detail", err)
+		sendResponse(m, Response{Error: fmt.Errorf("failed to get analysis: %w", err)})
 		return
 	}
 
-	analysisResponse, err := json.Marshal(toAnalysisNats(analysis))
-	if err != nil {
-		if err := m.Respond(nil); err != nil {
-			slog.Error("failed to respond error", "detail", err)
-		}
-
-		slog.Error("failed to marshal analysis to json", "detail", err)
-		return
-	}
-
-	if err := m.Respond(analysisResponse); err != nil {
-		slog.Error("failed to respond analysis", "detail", err)
-	}
+	sendResponse(m, Response{Data: toAnalysisNats(analysis)})
 }
 
 // GetAnalyzes gets analyzes by filter
@@ -104,12 +128,9 @@ func (h *NatsMqHandler) GetAnalyzes(m *natsclient.Msg) {
 	var filter AnalyzesFilterNats
 
 	if err := json.Unmarshal(m.Data, &filter); err != nil {
-		// TODO: respond error
-		if err := m.Respond(nil); err != nil {
-			slog.Error("failed to respond error", "detail", err)
-		}
-
-		slog.Error("failed to marshal analysis to json", "detail", err)
+		sendResponse(m, Response{
+			Error: fmt.Errorf("failed to unmarshal json to anylysis filter: %w", err),
+		})
 		return
 	}
 
@@ -118,25 +139,9 @@ func (h *NatsMqHandler) GetAnalyzes(m *natsclient.Msg) {
 
 	analyzes, err := h.uc.GetAnalyzes(ctx, toDomainAnalyzesFilter(filter))
 	if err != nil {
-		if err := m.Respond(nil); err != nil {
-			slog.Error("failed to respond error", "detail", err)
-		}
-
-		slog.Error("failed to get analyzes", "detail", err)
+		sendResponse(m, Response{Error: fmt.Errorf("failed to get analyzes: %w", err)})
 		return
 	}
 
-	analyzesResponse, err := json.Marshal(toAnalyzesNats(analyzes))
-	if err != nil {
-		if err := m.Respond(nil); err != nil {
-			slog.Error("failed to respond error", "detail", err)
-		}
-
-		slog.Error("failed to marshal analyzes", "detail", err)
-		return
-	}
-
-	if err := m.Respond(analyzesResponse); err != nil {
-		slog.Error("failed to respond analyzes", "detail", err)
-	}
+	sendResponse(m, Response{Data: toAnalyzesNats(analyzes)})
 }

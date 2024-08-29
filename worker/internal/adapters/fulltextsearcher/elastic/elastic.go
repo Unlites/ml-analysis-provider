@@ -1,4 +1,4 @@
-package fulltextsearcher
+package elastic
 
 import (
 	"context"

@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	natsConn, err := nats.Connect(nats.DefaultURL)
+	natsConn, err := nats.Connect("nats://nats:4222")
 	if err != nil {
 		slog.Error("failed to connect to nats", "detail", err)
 		os.Exit(1)
