@@ -10,10 +10,14 @@ func toDomainAnalyzesFilter(params GetAnalyzesParams) domain.AnalyzesFilter {
 
 	if params.Limit == nil {
 		filter.Limit = 10
+	} else {
+		filter.Limit = *params.Limit
 	}
 
 	if params.Offset == nil {
 		filter.Offset = 0
+	} else {
+		filter.Offset = *params.Offset
 	}
 
 	if params.Query != nil {
