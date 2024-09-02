@@ -9,12 +9,10 @@ RUN go mod download
 
 COPY . .
 
-CMD ["go", "run", "./cmd/worker/main.go"]
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /worker ./cmd/worker/main.go
 
-# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /worker ./cmd/worker/main.go
+FROM scratch
 
-# FROM scratch
+COPY --from=builder worker /bin/worker
 
-# COPY --from=builder worker /bin/worker
-
-# CMD ["/bin/worker"]
+CMD ["/bin/worker"]

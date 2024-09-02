@@ -15,12 +15,12 @@ services:
     volumes:
       - ./worker:/app
     restart: always
-  # worker-1:
-  #   container_name: ml-analysis-provider-worker-1
-  #   build: ./worker/
-  #   volumes:
-  #     - ./worker:/app
-  #   restart: always
+  worker-1:
+    container_name: ml-analysis-provider-worker-1
+    build: ./worker/
+    volumes:
+      - ./worker:/app
+    restart: always
   nats:
     container_name: ml-analysis-provider-nats
     image: nats:2.10
