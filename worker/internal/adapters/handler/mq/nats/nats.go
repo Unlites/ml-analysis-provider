@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+	"unicode/utf8"
 
 	"github.com/Unlites/ml-analysis-provider/worker/internal/application"
 	natsclient "github.com/nats-io/nats.go"
@@ -16,7 +17,7 @@ const analysisSubject = "analysis"
 
 // AnalysisNats is a NATS representation of Analysis
 type AnalysisNats struct {
-	Id              string `json:"id"`
+	Id              int    `json:"id"`
 	Query           string `json:"query"`
 	Answer          string `json:"answer"`
 	IsUserSatisfied bool   `json:"is_user_satisfied"`
@@ -27,12 +28,14 @@ type AnalyzesFilterNats struct {
 	Query           string `json:"query"`
 	Answer          string `json:"answer"`
 	IsUserSatisfied *bool  `json:"is_user_satisfied"`
+	Limit           int    `json:"limit"`
+	Offset          int    `json:"offset"`
 }
 
 // Response is a NATS response
 type Response struct {
-	Data  any   `json:"data"`
-	Error error `json:"error"`
+	Data  any    `json:"data"`
+	Error string `json:"error"`
 }
 
 // NatsMqHandler is a nats adapter as handler for application
@@ -61,7 +64,7 @@ func NewNatsMqHandler(
 func (h *NatsMqHandler) Start() error {
 	subHandlers := map[string]func(*natsclient.Msg){
 		analysisSubject:             h.AddAnalysis,
-		analysisSubject + ".*":      h.GetAnalysisById,
+		analysisSubject + ".id.*":   h.GetAnalysisById,
 		analysisSubject + ".filter": h.GetAnalyzes,
 	}
 
@@ -109,14 +112,14 @@ func (h *NatsMqHandler) AddAnalysis(m *natsclient.Msg) {
 
 // GetAnalysisById gets an analysis by id
 func (h *NatsMqHandler) GetAnalysisById(m *natsclient.Msg) {
-	id := m.Subject[len(analysisSubject)+1:]
+	id := m.Subject[utf8.RuneCountInString(analysisSubject+".id."):]
 
 	ctx, cancel := context.WithTimeout(context.Background(), h.handleTimeout)
 	defer cancel()
 
 	analysis, err := h.uc.GetAnalysisById(ctx, id)
 	if err != nil {
-		sendResponse(m, Response{Error: fmt.Errorf("failed to get analysis: %w", err)})
+		sendResponse(m, Response{Error: "failed to get analysis: " + err.Error()})
 		return
 	}
 
@@ -129,7 +132,7 @@ func (h *NatsMqHandler) GetAnalyzes(m *natsclient.Msg) {
 
 	if err := json.Unmarshal(m.Data, &filter); err != nil {
 		sendResponse(m, Response{
-			Error: fmt.Errorf("failed to unmarshal json to anylysis filter: %w", err),
+			Error: "failed to unmarshal json to anylysis filter: " + err.Error(),
 		})
 		return
 	}
@@ -139,7 +142,7 @@ func (h *NatsMqHandler) GetAnalyzes(m *natsclient.Msg) {
 
 	analyzes, err := h.uc.GetAnalyzes(ctx, toDomainAnalyzesFilter(filter))
 	if err != nil {
-		sendResponse(m, Response{Error: fmt.Errorf("failed to get analyzes: %w", err)})
+		sendResponse(m, Response{Error: "failed to get analyzes: " + err.Error()})
 		return
 	}
 

@@ -1,6 +1,8 @@
-package handler
+package httphandler
 
-import "github.com/Unlites/ml-analysis-provider/controller/internal/domain"
+import (
+	"github.com/Unlites/ml-analysis-provider/controller/internal/domain"
+)
 
 // toDomainAnalyzesFilter returnes AnalyzesFilter from GetAnalyzesParams
 func toDomainAnalyzesFilter(params GetAnalyzesParams) domain.AnalyzesFilter {

@@ -28,6 +28,8 @@ func toDomainAnalyzesFilter(afn AnalyzesFilterNats) domain.AnalyzesFilter {
 		Query:           afn.Query,
 		Answer:          afn.Answer,
 		IsUserSatisfied: afn.IsUserSatisfied,
+		Limit:           afn.Limit,
+		Offset:          afn.Offset,
 	}
 }
 

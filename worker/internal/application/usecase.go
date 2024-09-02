@@ -41,32 +41,21 @@ type Repository interface {
 	GetAnalyzesByIds(ctx context.Context, ids []string) ([]domain.Analysis, error)
 }
 
-// IdGenerator generates id
-type IdGenerator interface {
-	GenerateId() string
-}
-
 type usecase struct {
-	searcher    FullTextSearcher
-	repo        Repository
-	idGenerator IdGenerator
+	searcher FullTextSearcher
+	repo     Repository
 }
 
 // NewUsecase creates new usecase
-func NewUsecase(searcher FullTextSearcher, repo Repository, idGenerator IdGenerator) *usecase {
+func NewUsecase(searcher FullTextSearcher, repo Repository) *usecase {
 	return &usecase{
-		searcher:    searcher,
-		repo:        repo,
-		idGenerator: idGenerator,
+		searcher: searcher,
+		repo:     repo,
 	}
 }
 
 // AddAnalysis implements Usecase
 func (u *usecase) AddAnalysis(ctx context.Context, analysis domain.Analysis) error {
-	id := u.idGenerator.GenerateId()
-
-	analysis.Id = id
-
 	return u.repo.AddAnalysis(ctx, analysis)
 }
 
@@ -85,12 +74,12 @@ func (u *usecase) GetAnalyzes(ctx context.Context, filter domain.AnalyzesFilter)
 
 		analyzes, err = u.repo.GetAnalyzes(ctx, filter)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get analyzes: %w", err)
+			return nil, fmt.Errorf("failed to get analyzes from repo: %w", err)
 		}
 	} else {
 		analyzes, err = u.repo.GetAnalyzesByIds(ctx, ids)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get analyzes by ids: %w", err)
+			return nil, fmt.Errorf("failed to get analyzes by ids from repo: %w", err)
 		}
 	}
 

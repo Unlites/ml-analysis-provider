@@ -144,8 +144,8 @@ components:
         - is_user_satisfied
       properties:
         id:
-          type: string
-          example: 461e27a9-1f12-408b-834a-a698e749e9c2
+          type: integer
+          example: 123
         query:
           type: string
           example: "How to get started with Kubernetes"

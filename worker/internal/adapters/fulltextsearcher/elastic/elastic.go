@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Unlites/ml-analysis-provider/worker/internal/domain"
 	"github.com/elastic/go-elasticsearch/v8"
@@ -9,7 +10,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 )
 
-const analysisIndex = "analysis"
+const analysisIndex = "ml_analysis"
 
 // ElasticFullTextSearcher is a full text search adapter
 type ElasticFullTextSearcher struct {
@@ -29,25 +30,52 @@ func (s *ElasticFullTextSearcher) SearchAnalyzes(
 	filter domain.AnalyzesFilter,
 ) ([]string, error) {
 	query := &types.Query{
-		Match: map[string]types.MatchQuery{
-			"query":  {Query: filter.Query},
-			"answer": {Query: filter.Answer},
-		},
+		Bool: &types.BoolQuery{},
+	}
+
+	if filter.Query != "" {
+		query.Bool.Must = append(query.Bool.Must, types.Query{
+			Match: map[string]types.MatchQuery{
+				"query": {
+					Query: filter.Query,
+				},
+			},
+		})
+	}
+
+	if filter.Answer != "" {
+		query.Bool.Must = append(query.Bool.Must, types.Query{
+			Match: map[string]types.MatchQuery{
+				"answer": {
+					Query: filter.Answer,
+				},
+			},
+		})
 	}
 
 	if filter.IsUserSatisfied != nil {
-		query.Term = map[string]types.TermQuery{
-			"is_user_satisfied": {Value: *filter.IsUserSatisfied},
-		}
+		query.Bool.Must = append(query.Bool.Must, types.Query{
+			Term: map[string]types.TermQuery{
+				"is_user_satisfied": {Value: *filter.IsUserSatisfied},
+			},
+		})
 	}
 
-	s.client.Search().Index(analysisIndex).Request(
+	res, err := s.client.Search().Index(analysisIndex).Request(
 		&search.Request{
 			Query: query,
 			From:  &filter.Offset,
 			Size:  &filter.Limit,
 		},
-	)
+	).Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("fialed to do analyzes full text search: %w", err)
+	}
 
-	return nil, nil
+	ids := make([]string, len(res.Hits.Hits))
+	for i, hit := range res.Hits.Hits {
+		ids[i] = *hit.Id_
+	}
+
+	return ids, nil
 }

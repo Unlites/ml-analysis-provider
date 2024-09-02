@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Unlites/ml-analysis-provider/worker/internal/domain"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,9 +27,9 @@ func (r *PostgresRepository) AddAnalysis(ctx context.Context, analysis domain.An
 	}
 	defer conn.Release()
 
-	query := "INSERT INTO analysis (id, query, answer, is_user_satisfied) VALUES ($1, $2, $3, $4)"
+	query := "INSERT INTO ml_analysis.analyzes (query, answer, is_user_satisfied) VALUES ($1, $2, $3)"
 
-	_, err = conn.Exec(ctx, query, analysis.Id, analysis.Query, analysis.Answer, analysis.IsUserSatisfied)
+	_, err = conn.Exec(ctx, query, analysis.Query, analysis.Answer, analysis.IsUserSatisfied)
 	if err != nil {
 		return fmt.Errorf("failed to add analysis: %w", err)
 	}
@@ -46,7 +47,7 @@ func (r *PostgresRepository) GetAnalysisById(ctx context.Context, id string) (do
 
 	var analysis domain.Analysis
 
-	query := "SELECT id, query, answer, is_user_satisfied FROM analysis WHERE id = $1"
+	query := "SELECT id, query, answer, is_user_satisfied FROM ml_analysis.analyzes WHERE id = $1"
 
 	err = conn.QueryRow(ctx, query, id).Scan(
 		&analysis.Id,
@@ -55,7 +56,7 @@ func (r *PostgresRepository) GetAnalysisById(ctx context.Context, id string) (do
 		&analysis.IsUserSatisfied,
 	)
 	if err != nil {
-		return domain.Analysis{}, fmt.Errorf("failed to get analysis by id: %w", err)
+		return domain.Analysis{}, fmt.Errorf("failed to scan from postgres: %w", err)
 	}
 
 	return analysis, nil
@@ -74,35 +75,38 @@ func (r *PostgresRepository) GetAnalyzes(
 
 	var analyzes []domain.Analysis
 
-	query := "SELECT id, query, answer, is_user_satisfied FROM analysis"
+	query := "SELECT id, query, answer, is_user_satisfied FROM ml_analysis.analyzes WHERE 1=1"
+	args := make(pgx.NamedArgs)
 
 	if filter.Query != "" {
-		query += " WHERE query ILIKE $1"
+		query += " AND query ILIKE @query"
+		args["query"] = "%" + filter.Query + "%"
 	}
 	if filter.Answer != "" {
-		query += " WHERE answer ILIKE $2"
+		query += " AND answer ILIKE @answer"
+		args["answer"] = "%" + filter.Answer + "%"
 	}
 	if filter.IsUserSatisfied != nil {
-		query += " WHERE is_user_satisfied = $3"
+		query += " AND is_user_satisfied = @is_user_satisfied"
+		args["is_user_satisfied"] = *filter.IsUserSatisfied
 	}
 	if filter.Limit > 0 {
-		query += " LIMIT $4"
+		query += " LIMIT @limit"
+		args["limit"] = filter.Limit
 	}
 	if filter.Offset > 0 {
-		query += " OFFSET $5"
+		query += " OFFSET @offset"
+		args["offset"] = filter.Offset
 	}
 
-	rows, err := conn.Query(ctx, query,
-		"%"+filter.Query+"%",
-		"%"+filter.Answer+"%",
-		filter.IsUserSatisfied,
-		filter.Limit,
-		filter.Offset,
-	)
+	if filter.IsUserSatisfied != nil {
+		args["is_user_satisfied"] = *filter.IsUserSatisfied
+	}
+
+	rows, err := conn.Query(ctx, query, args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get analyzes: %w", err)
+		return nil, fmt.Errorf("failed to do query in postgres: %w", err)
 	}
-
 	for rows.Next() {
 		var analysis domain.Analysis
 		err = rows.Scan(
@@ -131,11 +135,11 @@ func (r *PostgresRepository) GetAnalyzesByIds(ctx context.Context, ids []string)
 
 	var analyzes []domain.Analysis
 
-	query := "SELECT id, query, answer, is_user_satisfied FROM analysis WHERE id = ANY($1)"
+	query := "SELECT id, query, answer, is_user_satisfied FROM ml_analysis.analyzes WHERE id = ANY($1)"
 
 	rows, err := conn.Query(ctx, query, ids)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get analyzes by ids: %w", err)
+		return nil, fmt.Errorf("failed to do query in postgres: %w", err)
 	}
 
 	for rows.Next() {

@@ -25,7 +25,7 @@ func NewNatsBroker(conn *natsclient.Conn) *NatsBroker {
 
 // AnalysisNats is a NATS representation of Analysis
 type AnalysisNats struct {
-	Id              string `json:"id"`
+	Id              int    `json:"id"`
 	Query           string `json:"query"`
 	Answer          string `json:"answer"`
 	IsUserSatisfied bool   `json:"is_user_satisfied"`
@@ -36,18 +36,20 @@ type AnalyzesFilterNats struct {
 	Query           string `json:"query"`
 	Answer          string `json:"answer"`
 	IsUserSatisfied *bool  `json:"is_user_satisfied"`
+	Limit           int    `json:"limit"`
+	Offset          int    `json:"offset"`
 }
 
 // analysisResponse is a NATS response for analysis request
 type analysisResponse struct {
 	Analysis AnalysisNats `json:"data"`
-	Error    error        `json:"error"`
+	Error    string       `json:"error"`
 }
 
 // analysisResponse is a NATS response for multiple analyzes request
 type analyzesResponse struct {
 	Analyzes []AnalysisNats `json:"data"`
-	Error    error          `json:"error"`
+	Error    string         `json:"error"`
 }
 
 // PublishAnalysis publishes analysis to NATS
@@ -62,7 +64,7 @@ func (n *NatsBroker) PublishAnalysis(ctx context.Context, analysis domain.Analys
 
 // RequestAnalysisById requests NATS for response with particular analysis
 func (n *NatsBroker) RequestAnalysisById(ctx context.Context, id string) (domain.Analysis, error) {
-	analysisMsg, err := n.conn.RequestWithContext(ctx, analysisSubject+"."+id, nil)
+	analysisMsg, err := n.conn.RequestWithContext(ctx, analysisSubject+".id."+id, nil)
 	if err != nil {
 		return domain.Analysis{}, fmt.Errorf("failed to do request: %w", err)
 	}
@@ -72,6 +74,11 @@ func (n *NatsBroker) RequestAnalysisById(ctx context.Context, id string) (domain
 	if err := json.Unmarshal(analysisMsg.Data, &response); err != nil {
 		return domain.Analysis{}, fmt.Errorf("failed to unmarshal analysis from json: %w", err)
 	}
+
+	if response.Error != "" {
+		return domain.Analysis{}, fmt.Errorf("error in response: %v", response.Error)
+	}
+
 	return toDomainAnalysis(response.Analysis), nil
 }
 
@@ -92,14 +99,9 @@ func (n *NatsBroker) RequestAnalyzes(ctx context.Context, filter domain.Analyzes
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
-	if response.Error != nil {
-		return nil, fmt.Errorf("error in response: %w", response.Error)
+	if response.Error != "" {
+		return nil, fmt.Errorf("error in response: %v", response.Error)
 	}
-
-	// var analyzes []AnalysisNats
-	// if err := json.Unmarshal(response.AnalysisNats, &analyzes); err != nil {
-	// 	return nil, fmt.Errorf("failed to unmarshal analysis from json: %w", err)
-	// }
 
 	return toDomainAnalyzes(response.Analyzes), nil
 }

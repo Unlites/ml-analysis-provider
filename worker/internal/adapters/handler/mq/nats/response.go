@@ -8,7 +8,7 @@ import (
 )
 
 func sendResponse(m *natsclient.Msg, r Response) {
-	if r.Error != nil {
+	if r.Error != "" {
 		slog.Error("error while processing request", "detail", r.Error)
 	}
 

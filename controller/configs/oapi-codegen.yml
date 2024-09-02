@@ -1,4 +1,4 @@
-package: handler
+package: httphandler
 generate:
   std-http-server: true
   embedded-spec: true
