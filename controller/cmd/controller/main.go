@@ -8,11 +8,18 @@ import (
 	natsbroker "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/broker/nats"
 	httphandler "github.com/Unlites/ml-analysis-provider/controller/internal/adapters/handler/http"
 	"github.com/Unlites/ml-analysis-provider/controller/internal/application"
+	"github.com/Unlites/ml-analysis-provider/controller/internal/config"
 	"github.com/nats-io/nats.go"
 )
 
 func main() {
-	natsConn, err := nats.Connect("nats://nats:4222")
+	cfg, err := config.NewConfig()
+	if err != nil {
+		slog.Error("failed to create config", "detail", err)
+		os.Exit(1)
+	}
+
+	natsConn, err := nats.Connect(cfg.Nats.ConnString)
 	if err != nil {
 		slog.Error("failed to connect to nats", "detail", err)
 		os.Exit(1)
@@ -27,7 +34,7 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    cfg.Server.Addr,
 		Handler: handler,
 	}
 

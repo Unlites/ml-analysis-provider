@@ -12,15 +12,22 @@ import (
 	natshandler "github.com/Unlites/ml-analysis-provider/worker/internal/adapters/handler/mq/nats"
 	"github.com/Unlites/ml-analysis-provider/worker/internal/adapters/repository/postgres"
 	"github.com/Unlites/ml-analysis-provider/worker/internal/application"
+	"github.com/Unlites/ml-analysis-provider/worker/internal/config"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 )
 
 func main() {
+	cfg, err := config.NewConfig()
+	if err != nil {
+		slog.Error("failed to create config", "detail", err)
+		os.Exit(1)
+	}
+
 	ctx := context.Background()
 
-	natsConn, err := nats.Connect("nats://nats:4222")
+	natsConn, err := nats.Connect(cfg.Nats.ConnString)
 	if err != nil {
 		slog.Error("failed to connect to nats", "detail", err)
 		os.Exit(1)
@@ -28,14 +35,14 @@ func main() {
 	defer natsConn.Drain()
 
 	elasticClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: []string{"http://elasticsearch:9200"},
+		Addresses: cfg.ElasticSearch.Addrs,
 	})
 	if err != nil {
 		slog.Error("failed to connect to elasticsearch", "detail", err)
 		os.Exit(1)
 	}
 
-	pgPool, err := pgxpool.New(ctx, "postgres://postgres:postgres_pass@postgres:5432/ml_analysis?&pool_max_conns=10")
+	pgPool, err := pgxpool.New(ctx, cfg.Postgres.ConnString)
 	if err != nil {
 		slog.Error("failed to create pg pool", "detail", err)
 		os.Exit(1)

@@ -9,10 +9,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /worker ./cmd/worker/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o worker ./cmd/worker/main.go
 
 FROM scratch
 
-COPY --from=builder worker /bin/worker
+ARG ENVIRONMENT
+ENV CONFIG_PATH=/usr/local/etc/${ENVIRONMENT}.yml
 
-CMD ["/bin/worker"]
+COPY --from=builder /app/worker /usr/local/bin/worker
+COPY --from=builder /app/configs/${ENVIRONMENT}.yml ${CONFIG_PATH}
+
+CMD ["/usr/local/bin/worker"]

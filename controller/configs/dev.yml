@@ -1,0 +1,4 @@
+nats:
+  conn_string: nats://nats:4222
+server:
+  addr: 0.0.0.0:8080

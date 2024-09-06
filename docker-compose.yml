@@ -3,21 +3,29 @@ version: '3.8'
 services:
   controller:
     container_name: ml-analysis-provider-controller
-    build: ./controller/
-    volumes:
-      - ./controller:/app
+    build: 
+      context: ./controller/
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT}
     ports:
       - 8080:8080
     restart: always
   worker:
     container_name: ml-analysis-provider-worker
-    build: ./worker/
-    volumes:
-      - ./worker:/app
+    build: 
+      context: ./worker/
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT}
     restart: always
   worker-1:
     container_name: ml-analysis-provider-worker-1
-    build: ./worker/
+    build: 
+      context: ./worker/
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT}
     volumes:
       - ./worker:/app
     restart: always

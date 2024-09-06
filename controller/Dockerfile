@@ -9,10 +9,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /controller ./cmd/controller/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o controller ./cmd/controller/main.go
 
 FROM scratch
 
-COPY --from=builder controller /bin/controller
+ARG ENVIRONMENT
+ENV CONFIG_PATH=/usr/local/etc/${ENVIRONMENT}.yml
 
-CMD ["/bin/controller"]
+COPY --from=builder /app/controller /usr/local/bin/controller
+COPY --from=builder /app/configs/${ENVIRONMENT}.yml ${CONFIG_PATH}
+
+CMD ["/usr/local/bin/controller"]
