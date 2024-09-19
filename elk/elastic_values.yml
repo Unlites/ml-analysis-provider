@@ -1,0 +1,8 @@
+createCert: false
+esJavaOpts: "-Xms512m -Xmx512m"
+image: elasticsearch
+imageTag: 8.5.1
+esConfig:
+  elasticsearch.yml: |
+      xpack.security.enabled: false
+antiAffinity: soft

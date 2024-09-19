@@ -1,0 +1,39 @@
+image: logstash
+imageTag: 8.5.1
+logstashPipeline:
+  pg_elastic_sync.yml: |
+    input{
+      jdbc{
+          jdbc_connection_string => "jdbc:postgresql://postgres-release-postgresql-hl:5432/ml_analysis"
+          jdbc_user => "postgres"
+          jdbc_password => "postgres_pass"
+          jdbc_driver_class => "org.postgresql.Driver"
+          jdbc_paging_enabled => true
+          use_column_value => true
+          tracking_column => "id"
+          schedule => "*/10 * * * * *"
+          statement => "SELECT * FROM ml_analysis.analyzes WHERE id > :sql_last_value"
+      }
+    }
+    filter{
+        mutate{
+            copy => {"id" => "[@metadata][_id]"}
+            remove_field => ["@version","@timestamp"]
+        }
+    }
+    output{
+        elasticsearch{
+            hosts => ["http://elasticsearch-master-headless:9200"]
+            index => "ml_analysis"
+            document_id => "%{[@metadata][_id]}"
+        }
+    }
+extraEnvs:
+  - name: CONFIG_SUPPORT_ESCAPE
+    value: true
+      - ELASTICSEARCH_URL=http://elasticsearch-master-headless:9200
+
+extraVolumeMounts:
+  - name: jdbc
+    mountPath: /usr/share/logstash/logstash-core/lib/jars/postgres-jdbc-42.7.4.jar
+    hostPath: ./elk/postgres-jdbc-42.7.4.jar

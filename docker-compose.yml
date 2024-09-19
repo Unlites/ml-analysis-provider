@@ -45,7 +45,7 @@ services:
     command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
   elasticsearch:
     container_name: ml-analysis-provider-elasticsearch
-    image: elasticsearch:8.5.3
+    image: elasticsearch:8.5.1
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -58,7 +58,7 @@ services:
 
   logstash:
     container_name: ml-analysis-provider-logstash
-    image: logstash:8.5.3
+    image: logstash:8.5.1
     ports:
       - 5000:5000
     restart: always
@@ -70,13 +70,13 @@ services:
       - postgres
     volumes:
       - logstashdata:/usr/share/logstash/data
-      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./elk/logstash.local.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./elk/postgres-jdbc-42.7.4.jar:/usr/share/logstash/logstash-core/lib/jars/postgres-jdbc-42.7.4.jar
   kibana:
    container_name: ml-analysis-provider-kibana
    depends_on:
     - elasticsearch
-   image: kibana:8.5.3
+   image: kibana:8.5.1
    restart: always
    labels:
      co.elastic.logs/module: kibana
