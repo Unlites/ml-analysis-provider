@@ -28,12 +28,22 @@ logstashPipeline:
             document_id => "%{[@metadata][_id]}"
         }
     }
+
 extraEnvs:
   - name: CONFIG_SUPPORT_ESCAPE
-    value: true
-      - ELASTICSEARCH_URL=http://elasticsearch-master-headless:9200
+    value: "true"
+  - name: ELASTICSEARCH_URL
+    value: http://elasticsearch-master-headless:9200
+
+extraVolumes:
+  - name: jdbc
+    hostPath: 
+      path: /tmp/hostpath_pv/postgres-jdbc-42.7.4.jar
+      type: FileOrCreate
+
 
 extraVolumeMounts:
   - name: jdbc
     mountPath: /usr/share/logstash/logstash-core/lib/jars/postgres-jdbc-42.7.4.jar
-    hostPath: ./elk/postgres-jdbc-42.7.4.jar
+    readOnly: true
+
