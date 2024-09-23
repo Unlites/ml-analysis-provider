@@ -12,7 +12,10 @@ type Nats struct {
 }
 
 type ElasticSearch struct {
-	Addrs []string `yaml:"hosts"`
+	Addrs    []string `yaml:"addrs"`
+	CaPath   string   `yaml:"ca_path"`
+	Username string   `env:"ELASTICSEARCH_USERNAME" env-required:"true"`
+	Password string   `env:"ELASTICSEARCH_PASSWORD" env-required:"true"`
 }
 
 type Postgres struct {

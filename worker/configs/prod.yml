@@ -1,7 +1,8 @@
 nats:
-  conn_string: nats://localhost:4222
+  conn_string: nats://nats-release:4222
 elasticsearch:
+  ca_path: /usr/local/etc/elastic-certs/ca.crt
   addrs:
-    - http://localhost:9200
+    - https://elasticsearch-master:9200
 postgres:
   conn_string: postgres://postgres:postgres_pass@postgres-release-postgresql:5432/ml_analysis?&pool_max_conns=10 

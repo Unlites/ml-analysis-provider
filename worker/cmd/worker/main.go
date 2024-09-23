@@ -34,11 +34,29 @@ func main() {
 	}
 	defer natsConn.Drain()
 
-	elasticClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+	elasticConfig := elasticsearch.Config{
 		Addresses: cfg.ElasticSearch.Addrs,
-	})
+	}
+
+	if cfg.ElasticSearch.CaPath != "" {
+		cert, err := os.ReadFile(cfg.ElasticSearch.CaPath)
+		if err != nil {
+			slog.Error("failed to read elastic ca cert", "detail", err)
+			os.Exit(1)
+		}
+
+		elasticConfig.CACert = cert
+		elasticConfig.Username = cfg.ElasticSearch.Username
+		elasticConfig.Password = cfg.ElasticSearch.Password
+	}
+
+	elasticClient, err := elasticsearch.NewTypedClient(elasticConfig)
 	if err != nil {
 		slog.Error("failed to connect to elasticsearch", "detail", err)
+		os.Exit(1)
+	}
+	if success, err := elasticClient.Ping().IsSuccess(ctx); err != nil || !success {
+		slog.Error("failed to ping elasticsearch", "detail", err)
 		os.Exit(1)
 	}
 
