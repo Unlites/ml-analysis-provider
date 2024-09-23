@@ -4,7 +4,7 @@ logstashPipeline:
   pg_elastic_sync.yml: |
     input{
       jdbc{
-          jdbc_connection_string => "jdbc:postgresql://postgres-release-postgresql-hl:5432/ml_analysis"
+          jdbc_connection_string => "jdbc:postgresql://postgres-release-postgresql:5432/ml_analysis"
           jdbc_user => "postgres"
           jdbc_password => "postgres_pass"
           jdbc_driver_class => "org.postgresql.Driver"
@@ -23,27 +23,39 @@ logstashPipeline:
     }
     output{
         elasticsearch{
-            hosts => ["http://elasticsearch-master-headless:9200"]
+            hosts => ["https://elasticsearch-master:9200"]
             index => "ml_analysis"
             document_id => "%{[@metadata][_id]}"
+            cacert => '/usr/share/logstash/config/certs/ca.crt'
+            user => '${ELASTICSEARCH_USERNAME}'
+            password => '${ELASTICSEARCH_PASSWORD}'
         }
     }
 
 extraEnvs:
-  - name: CONFIG_SUPPORT_ESCAPE
-    value: "true"
-  - name: ELASTICSEARCH_URL
-    value: http://elasticsearch-master-headless:9200
+  - name: "ELASTICSEARCH_USERNAME"
+    valueFrom:
+      secretKeyRef:
+        name: elasticsearch-master-credentials
+        key: username
+  - name: "ELASTICSEARCH_PASSWORD"
+    valueFrom:
+      secretKeyRef:
+        name: elasticsearch-master-credentials
+        key: password
 
 extraVolumes:
   - name: jdbc
     hostPath: 
       path: /tmp/hostpath_pv/postgres-jdbc-42.7.4.jar
-      type: FileOrCreate
-
+      type: File
 
 extraVolumeMounts:
   - name: jdbc
     mountPath: /usr/share/logstash/logstash-core/lib/jars/postgres-jdbc-42.7.4.jar
     readOnly: true
 
+secretMounts: 
+  - name: elasticsearch-master-certs
+    secretName: elasticsearch-master-certs
+    path: /usr/share/logstash/config/certs

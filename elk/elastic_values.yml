@@ -1,8 +1,10 @@
-createCert: false
-esJavaOpts: "-Xms512m -Xmx512m"
+esJavaOpts: "-Xmx128m -Xms128m"
 image: elasticsearch
 imageTag: 8.5.1
-esConfig:
-  elasticsearch.yml: |
-      xpack.security.enabled: false
 antiAffinity: soft
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: "standard"
+  resources:
+    requests:
+      storage: 100M

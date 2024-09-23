@@ -1,0 +1,12 @@
+image: kibana
+imageTag: 8.5.1
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: ml-analysis-provider.kibana
+      paths:
+        - path: /
+          pathType: Prefix
