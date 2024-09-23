@@ -1,4 +1,4 @@
 nats:
   conn_string: nats://localhost:4222
 server:
-  addr: 8080
+  addr: 0.0.0.0:8080
